@@ -36,7 +36,12 @@ def majMenu():
 
     return(dico)
 
+def menuDuJours(dico):
+    '''
+    Retourne un tuple (Date, Tableau des différents plats) du jours
+    '''
+    cle = list(dico.keys())
+    return (cle[0], dico[cle[0]])
 
-
-
-
+dico = majMenu()
+print(menuDuJours(dico))
