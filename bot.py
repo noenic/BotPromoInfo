@@ -26,7 +26,8 @@ async def on_message(message):
         menuJours = menu.menuDuJours(menu.majMenu())
         messageText = ""
         messageText += "🍽 ___***" + menuJours[0] + "***___ 🍽" + "\n"
-        for i in range(len(menuJours[0])):
+        
+        for i in range(len(menuJours[1])):
             messageText += '• ' + menuJours[1][i] + "\n"
         await message.channel.send(messageText)
 

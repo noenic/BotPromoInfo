@@ -42,6 +42,3 @@ def menuDuJours(dico):
     '''
     cle = list(dico.keys())
     return (cle[0], dico[cle[0]])
-
-dico = majMenu()
-print(menuDuJours(dico))
