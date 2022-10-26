@@ -3,9 +3,6 @@ from dotenv import load_dotenv
 import os
 import menu
 
-#Indiquer où est le fichier de config
-load_dotenv(dotenv_path="config")
-
 #Création du client
 intents = discord.Intents.default()
 intents.message_content = True
@@ -42,4 +39,4 @@ async def on_message(message):
         await message.channel.send(messageText)
 
 #Démarrage du client
-client.run(os.getenv("TOKEN"))
+client.run(os.environ("TOKEN"))
