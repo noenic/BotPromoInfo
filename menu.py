@@ -21,7 +21,8 @@ def majMenu():
 
     tab = []
     for i in range(len(sElement)):
-        tab.append(sElement[i].select_one('ul[class="liste-plats"]'))
+        if(sElement[i].select_one('ul[class="liste-plats"]') != None):
+            tab.append(sElement[i].select_one('ul[class="liste-plats"]'))
 
     dico = {}
     for i in range(len(tab)):
@@ -42,3 +43,5 @@ def menuDuJours(dico):
     '''
     cle = list(dico.keys())
     return (cle[0], dico[cle[0]])
+
+print(majMenu())
