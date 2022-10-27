@@ -38,4 +38,4 @@ async def on_message(message):
         await message.channel.send(messageText)
 
 #Démarrage du client
-client.run(os.environ("TOKEN"))
+client.run(os.environ["TOKEN"])
