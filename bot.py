@@ -19,11 +19,13 @@ async def on_message(message):
         return
 
     if message.content == "!menu":
-        menuJours = menu.menuDuJours(menu.majMenu())
+        dico = menu.majMenu()
+        print(dico)
         #Vérification de si le menu est vide ou pas 
-        if menuJours == {}:
+        if dico == {}:
             messageText = "❌ Menu pas encore disponible ❌"
         else:
+            menuJours = menu.menuDuJours(dico)
             messageText = ""
             messageText += "🍽 ___***" + menuJours[0] + "***___ 🍽" + "\n"
             
@@ -36,7 +38,7 @@ async def on_message(message):
         dico = menu.majMenu()
         messageText = ""
         #Vérification de si le menu est vide ou pas 
-        if menuJours == {}:
+        if dico == {}:
             messageText = "❌ Menu pas encore disponible ❌"
         else:
             for jours in dico:
