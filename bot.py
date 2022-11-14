@@ -48,5 +48,11 @@ async def on_message(message):
                 messageText += '\n'
         await message.channel.send(messageText)
 
+    if message.content == '!help':
+        messageText = ""
+        #Vérification de si le menu est vide ou pas 
+        messageText = "🚧 Liste des commandes 🚧\n!menu : Voir le menu du jours\n!menu : Voir tous les menus disponibles"
+        await message.channel.send(messageText)
+
 #Démarrage du client
 client.run(os.environ["TOKEN"])
