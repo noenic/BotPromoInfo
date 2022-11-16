@@ -2,16 +2,8 @@ import requests
 from bs4 import BeautifulSoup as bs
 
 def majMenu():
-    '''
-    Retourne un dictionnaire avec les différents menu des jours à venir exemple : 
-    {'Menu du mardi 25 octobre 2022': ['Cordon bleu', 'Poisson à la bordelaise', 'Boulette soja tomate', 'Blé pilaf sauce tomate', 'Haricots verts'], 
-    'Menu du mercredi 26 octobre 2022': ["Dos de colin d'Alaska sauce basquaise", 'Emincé de porc', 'Purée de potiron', 'Haricots plats'], 
-    'Menu du jeudi 27 octobre 2022': ['Poisson meunière', 'Steak haché', 'Frites', 'Brocolis ail/persil']}
-    '''
-    #Définition de l'URL
     url = 'https://www.crous-bordeaux.fr/restaurant/resto-u-pierre-bidart/'
 
-    #Request get de la page 
     r = requests.get(url)
 
     soup = bs(r.text, 'html.parser')
@@ -38,9 +30,6 @@ def majMenu():
     return(dico)
 
 def menuDuJours(dico):
-    '''
-    Retourne un tuple (Date, Tableau des différents plats) du jours
-    '''
     cle = list(dico.keys())
     return (cle[0], dico[cle[0]])
 
