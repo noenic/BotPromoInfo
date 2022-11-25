@@ -53,5 +53,47 @@ async def on_message(message):
         messageText = "🚧 ___***Liste des commandes***___ 🚧\n!menu : Voir le menu du jours\n!menuAll : Voir tous les menus disponibles"
         await message.channel.send(messageText)
 
+
+#Ajout des commandes
+#Commande /menu
+@client.slash_command(name="menu")
+async def menu(ctx):
+    dico = menu.majMenu()
+    print(dico)
+    #Vérification de si le menu est vide ou pas 
+    if dico == {}:
+        messageText = "❌ Menu pas encore disponible ❌"
+    else:
+        menuJours = menu.menuDuJours(dico)
+        messageText = ""
+        messageText += "🍽 ___***" + menuJours[0] + "***___ 🍽" + "\n"
+            
+        for i in range(len(menuJours[1])):
+            messageText += '• ' + menuJours[1][i] + "\n"
+    await ctx.respond(messageText)
+
+#Commande /menuAll
+@client.slash_command(name="menuAll")
+async def menuAll(ctx):
+    dico = menu.majMenu()
+    messageText = ""
+    #Vérification de si le menu est vide ou pas 
+    if dico == {}:
+        messageText = "❌ Menu pas encore disponible ❌"
+    else:
+        for jours in dico:
+            messageText += "🍽 ___***" + jours + "***___ 🍽" + "\n"
+            for y in range(len(dico[jours])):
+                messageText += '• ' + dico[jours][y] + "\n"
+            messageText += '\n'    
+    await ctx.respond(messageText)
+
+@client.slash_command(name="help")
+async def menu(ctx):
+    messageText = ""
+    #Vérification de si le menu est vide ou pas 
+    messageText = "🚧 ___***Liste des commandes***___ 🚧\n!menu : Voir le menu du jours\n!menuAll : Voir tous les menus disponibles"
+    await ctx.respond(messageText)
+
 #Démarrage du client
 client.run(os.environ["TOKEN"])
