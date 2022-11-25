@@ -58,7 +58,7 @@ async def on_message(message):
 #Ajout des commandes
 #Commande /menu
 @client.command(name="menuDuJours")
-async def menu(ctx):
+async def menuDay(ctx):
     dico = menu.majMenu()
     print(dico)
     #Vérification de si le menu est vide ou pas 
@@ -75,7 +75,7 @@ async def menu(ctx):
 
 #Commande /menuAll
 @client.command(name="menuDeLaSemaine")
-async def menuAll(ctx):
+async def menuWeek(ctx):
     dico = menu.majMenu()
     messageText = ""
     #Vérification de si le menu est vide ou pas 
@@ -91,3 +91,4 @@ async def menuAll(ctx):
 
 #Démarrage du client
 client.run(os.environ["TOKEN"])
+
