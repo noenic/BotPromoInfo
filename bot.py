@@ -6,7 +6,7 @@ import menu
 #Création du client
 intents = discord.Intents.default()
 intents.message_content = True
-client = commands.Client(intents=intents)
+client = commands.Bot(intents=intents, command_prefix='/')
 
 @client.event
 async def on_ready():
@@ -57,7 +57,7 @@ async def on_message(message):
 
 #Ajout des commandes
 #Commande /menu
-@client.slash_command(name="menu")
+@client.command(name="menu")
 async def menu(ctx):
     dico = menu.majMenu()
     print(dico)
@@ -74,7 +74,7 @@ async def menu(ctx):
     await ctx.respond(messageText)
 
 #Commande /menuAll
-@client.slash_command(name="menuAll")
+@client.command(name="menuAll")
 async def menuAll(ctx):
     dico = menu.majMenu()
     messageText = ""
@@ -87,13 +87,6 @@ async def menuAll(ctx):
             for y in range(len(dico[jours])):
                 messageText += '• ' + dico[jours][y] + "\n"
             messageText += '\n'    
-    await ctx.respond(messageText)
-
-@client.slash_command(name="help")
-async def menu(ctx):
-    messageText = ""
-    #Vérification de si le menu est vide ou pas 
-    messageText = "🚧 ___***Liste des commandes***___ 🚧\n!menu : Voir le menu du jours\n!menuAll : Voir tous les menus disponibles"
     await ctx.respond(messageText)
 
 #Démarrage du client
