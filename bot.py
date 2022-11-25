@@ -57,7 +57,7 @@ async def on_message(message):
 
 #Ajout des commandes
 #Commande /menu
-@client.command(name="menu")
+@client.command(name="menuDuJours")
 async def menu(ctx):
     dico = menu.majMenu()
     print(dico)
@@ -74,7 +74,7 @@ async def menu(ctx):
     await ctx.respond(messageText)
 
 #Commande /menuAll
-@client.command(name="menuAll")
+@client.command(name="menuDeLaSemaine")
 async def menuAll(ctx):
     dico = menu.majMenu()
     messageText = ""
