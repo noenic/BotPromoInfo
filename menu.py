@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup as bs
 
 def majMenu():
+    return {}
     url = 'https://www.crous-bordeaux.fr/restaurant/resto-u-pierre-bidart/'
 
     r = requests.get(url)
