@@ -157,4 +157,4 @@ dmypy.json
 cython_debug/
 
 #La configuration du bot
-#config.ini
+*.ini
