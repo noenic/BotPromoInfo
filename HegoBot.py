@@ -2,14 +2,25 @@
 import sys
 from discord.ext import commands
 import interactions
+#On load les informations du bot depuis le fichier config.ini
+import configparser,ast
+config = configparser.ConfigParser()
+config.read('config.ini')
+token = config['TOKEN']['token']
+guilds=ast.literal_eval(config['GUILDS']['guilds'])
+
 
 #On ajoute le dossier Cogs ainsi que ses sources au path pour pouvoir importer les fichiers d'extensions
 sys.path.append('Cogs')
 sys.path.append('Cogs/src')
+
+
+
+
 client = interactions.Client(
-    token="token",
-    default_scope="guild"
-)
+    token=token,
+    default_scope=guilds,
+)   
 
 #On charge les extensions
 client.load("Salles")
@@ -26,8 +37,12 @@ async def on_ready():
 @client.command()
 async def kill(ctx: interactions.CommandContext):
     """Kill le bot"""
-    await ctx.send("Je degage!")
-    exit()
+    #Si c'est moi qui lance la commande, il le fait sinon il répond par un gif plus ou moins approprié
+    if ctx.author.id=="356383729125556228":
+        await ctx.send("Je degage!")
+        exit()
+    else:
+        await ctx.send("https://tenor.com/view/chut-ferme-la-tg-puceau-puceau-de-merde-gif-20903914",ephemeral=True)
 
 
 client.start()
