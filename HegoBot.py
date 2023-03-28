@@ -42,6 +42,7 @@ async def kill(ctx: interactions.CommandContext):
         await ctx.send("Je degage!")
         exit()
     else:
+        print("[Main] l'Utilisateur "+ ctx.author.name+ " a tenté de kill le bot")
         await ctx.send("https://tenor.com/view/chut-ferme-la-tg-puceau-puceau-de-merde-gif-20903914",ephemeral=True)
 
 

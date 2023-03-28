@@ -5,6 +5,10 @@ import datetime
 import concurrent 
 import concurrent.futures
 
+heureHIVER=datetime.timezone.utc
+heureETE=datetime.timezone(datetime.timedelta(hours=1))
+decalage=heureETE
+
 class TrouveTaSalle():
     def __init__(self,listeID:dict,refresh_on_init:bool=True):
         if type(listeID) != dict:
@@ -37,13 +41,13 @@ class TrouveTaSalle():
     On le fait en parallèle pour gagner du temps (On fait les requetes en thread)
     '''
     def refresh(self):
-        self.date=datetime.datetime.now().replace(tzinfo=datetime.timezone.utc)
+        self.date=datetime.datetime.now().replace(tzinfo=decalage)
         # self.date=self.date+datetime.timedelta(days=1)
-        # self.date=self.date.replace(hour=8,minute=59,second=0,microsecond=0)
+        # self.date=self.date.replace(hour=14,minute=0,second=0,microsecond=0)
         #Si il est avant 7h et apres 18h30, ou qu'on est le week end, on renvoie pas de donnees
         if self.date.weekday() >= 5:
             return "weekend"
-        if (self.date.hour> 19):
+        if (self.date.hour> 19 or (self.date.hour> 19 and  self.date.minute > 30)) :
             return "hour"
         #On clear les salles pour les remplir avec les nouvelles et en meme temps on supprime les evenements qui sont finis
         tempsalle={}
@@ -139,7 +143,7 @@ class TrouveTaSalle():
 
     #Si la derniere date de refresh est superieur a 5 minutes on refresh pour avoir les nouvelles données si il y en a
     def need_refresh(self):
-        if datetime.datetime.now().replace(tzinfo=datetime.timezone.utc)-self.date > datetime.timedelta(minutes=10) and self.refresh_on_init:
+        if datetime.datetime.now().replace(tzinfo=decalage)-self.date > datetime.timedelta(minutes=10) and self.refresh_on_init:
             print("[Salles] On refresh")
             self.refresh()
 
@@ -202,8 +206,8 @@ class TrouveTaSalle():
     def detecter_creneaux_libres_salle(self,salle:str):
         creneaux_libres = []
         #Disons qu'une salle est ouverte de 8h a 20h
-        debut = datetime.datetime(self.date.year, self.date.month, self.date.day, 7, 45, 0,tzinfo=datetime.timezone.utc)
-        fin = datetime.datetime(self.date.year, self.date.month, self.date.day, 20, 0, 0,tzinfo=datetime.timezone.utc)
+        debut = datetime.datetime(self.date.year, self.date.month, self.date.day, 7, 45, 0,tzinfo=decalage)
+        fin = datetime.datetime(self.date.year, self.date.month, self.date.day, 19, 30, 0,tzinfo=decalage)
         #On verifie qu'on est pas plus tard que la fin
         if self.salles[salle] == [] and self.date.timestamp() < fin.timestamp():
             creneaux_libres.append([self.date.timestamp(), fin.timestamp()])
