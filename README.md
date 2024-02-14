@@ -1,29 +1,15 @@
-# Bot CROUS
+# Bot discord pour l'IUT de Bayonne - Anglet
 
-## Descriptif
-Bot Discord qui informe du menu du jour au Restaurant Universitaire Pierre Bidart à Anglet.
+## Description
+Ce bot originalement prévu pour recuperer les menus du RU d'Anglet, a été modifié pour pouvoir y ajouter des fonctionnalités supplémentaires.
+Etant donné que le RU à decidé de ne pas mettre les menus sur son site web, le bot ne fait pour le moment que recuperer les emplois du temps de chaque promo.
 
-## Installation
-
-## Commandes
-La liste des commandes est la suivante :
-
-Commande | Description
------------- |  ------------- 
-***!menu*** | Donne le menu du jour
-***!menuAll*** | Donne les menus de la semaine en cours
+## Utilisation
+Pour utiliser le bot, il suffit de mettre en variable d'environnement le token du bot, et de lancer le fichier `Hegobot.py`.
 
 
-## Documentation utile
-
-### Fonction majMenu
-Retourne un dictionnaire avec les différents menu des jours à venir exemple : 
-```python
-{'Menu du mardi 25 octobre 2022': 
-['Cordon bleu', 'Poisson à la bordelaise', 'Boulette soja tomate', 'Blé pilaf sauce tomate', 'Haricots verts'], 
-'Menu du mercredi 26 octobre 2022': ["Dos de colin d'Alaska sauce basquaise", 'Emincé de porc', 'Purée de potiron', 'Haricots plats'], 
-'Menu du jeudi 27 octobre 2022': ['Poisson meunière', 'Steak haché', 'Frites', 'Brocolis ail/persil']}
-```
-
-### Fonction menuDuJours
-Retourne un tuple (Date, Tableau des différents plats) du jours
+## Fonctionnalités
+- [x] Récupération des emplois du temps
+- [x] Informations sur les salles de l'IUT
+- [x] Informations sur les professeurs de l'IUT
+- [ ] Récupération des menus du RU

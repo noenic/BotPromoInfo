@@ -1,8 +1,9 @@
 import interactions,sys
-import datetime as datetime
-import threading 
+import threading
 import time
 import traceback
+import datetime as datetime
+import pytz
 from src.TrouveTaSalle import TrouveTaSalle
 #------------CONSTANTES------------#
 ID_PROMOS={
@@ -36,7 +37,12 @@ ROLES={"TD":{"959814970336510022":"TD1",
 
 
 def format_time(timestamp):
-    return datetime.datetime.fromtimestamp(timestamp-3600).strftime("%H:%M")
+    # Timezone Paris
+    tz = pytz.timezone('Europe/Paris')
+    # On convertit le timestamp UTC en timestamp Paris
+    timestamp = datetime.datetime.utcfromtimestamp(timestamp).replace(tzinfo=pytz.utc).astimezone(tz)
+    return timestamp.strftime("%H:%M")
+
 
 
 #Fonction threadée pour mettre à jour l'emploi du temps toutes les 5 minutes
@@ -70,7 +76,7 @@ class Salles(interactions.Extension):
     def change_state(self,state):
         self.edt.active=state
     
-    async def check_state(self, ctx: interactions.CommandContext):
+    async def check_state(self, ctx: interactions.SlashContext):
         if not self.edt.active:
             Embed=interactions.Embed(
                 title=":x: ERREUR :x:",
@@ -93,16 +99,20 @@ class Salles(interactions.Extension):
         return True
 
 
-    @interactions.extension_command(
+    @interactions.slash_command(
     name="salles_libres", 
     description="Retourne les salles libres actuellement, triées par durée de disponibilité",
     )
-    async def salle_libre(self, ctx: interactions.CommandContext):
+    async def salle_libre(self, ctx: interactions.SlashContext):
         if not await self.check_state(ctx):
             return
         info=self.edt.get_salle_libre()
-        msg='''```Salles libres actuellement, triées par durée de disponibilité:\n'''
-
+        Embed=interactions.Embed(
+            title="Salles libres actuellement, triées par durée de disponibilité",
+            description="",
+            color=0xff8c3f,
+            footer={"text":"Dernière mise à jour: "+format_time(self.edt.date.timestamp())+"\nLes informations peuvent être incomplètes ou inexactes"},
+        )
         for salle in info:
             if salle in self.edt.listeSallesPC:
                 strsalle="🖥️ "+salle
@@ -110,28 +120,28 @@ class Salles(interactions.Extension):
                     strsalle+=" "
             else:
                 strsalle="📚 "+salle
-            # msg+=strsalle+" : ["+datetime.datetime.fromtimestamp(info[salle][0][0],tzinfo=datetime.timezone.utc).strftime("%H:%M")+" - "+datetime.datetime.fromtimestamp(info[salle][0][1],tzinfo=datetime.timezone.utc).strftime("%H:%M")+"]\n"
-            #L'heure est en UTC+1, on la convertit en UTC
-            msg+=strsalle+" : "+format_time(info[salle][0][0])+" - "+format_time(info[salle][0][1])+"\n"
+            Embed.add_field(name=strsalle + "     ->     " +format_time(info[salle][0][0])+" - "+format_time(info[salle][0][1]), value="\n", inline=False)
+        await ctx.send(embeds=Embed)
 
 
-        msg+="```"
-        await ctx.send(msg)
 
-    @interactions.extension_command(
+
+
+
+
+    @interactions.slash_command(
         name="info_salle",
         description="Retourne les informations sur une salle",
-        options = [
-        interactions.Option(
-            name="salle",
-            description="De quelle salle veux-tu les informations ?",
-            type=interactions.OptionType.STRING,
-            required=True,
-        ),
-    ],
-        
     )
-    async def info_salle(self, ctx: interactions.CommandContext, salle: str):
+    @interactions.slash_option(
+        name="salle",
+        description="De quelle salle veux-tu les informations ?",
+        required=True,
+        opt_type=interactions.OptionType.STRING,
+        max_length=3,
+        min_length=1
+    )
+    async def info_salle(self, ctx: interactions.SlashContext, salle: str):
         if not await self.check_state(ctx):
             return
         info=self.edt.get_info_salle(salle)
@@ -175,50 +185,47 @@ class Salles(interactions.Extension):
             
             await ctx.send(embeds=Embed)
     
-    @interactions.extension_command(
+    @interactions.slash_command(
         name="info_prof",
         description="Retourne les informations sur un professeur",
-        options = [
-        interactions.Option(
-            name="prof",
-            description="De quel professeur veux-tu les informations ?",
-            type=interactions.OptionType.STRING,
-            required=True,
-            choices=[
-                #On est limité à 25 choix, donc on en met que 25 (On met que les plus importants)
-                interactions.Choice(name="P. Lopistéguy", value="LOPISTÉGUY"),
-                interactions.Choice(name="Y. Carpentier", value="CARPENTIER"),
-                interactions.Choice(name="P. Etcheverry", value="ETCHEVERRY"),
-                interactions.Choice(name="C. Marquesuzaà", value="MARQUESUZAÀ"),
-                interactions.Choice(name="M. Bruyère", value="BRUYÈRE"),
-                interactions.Choice(name="A. Moulin", value="MOULIN"),
-                interactions.Choice(name="M. Borthwick", value="BORTHWICK"),
-                interactions.Choice(name="D. Urruty", value="URRUTY"),
-                interactions.Choice(name="M. Erritali", value="ERRITALI"),
-                interactions.Choice(name="S. Sassi", value="SASSI"),
-                interactions.Choice(name="R. Chbeir", value="CHBEIR"),
-                interactions.Choice(name="T. Nodenot", value="NODENOT"),
-                interactions.Choice(name="E. Chicha", value="CHICHA"),
-                interactions.Choice(name="A. Boggia", value="BOGGIA"),
-                interactions.Choice(name="M. Capliez", value="CAPLIEZ"),
-                #interactions.Choice(name="O. DEZEQUE", value="DEZEQUE"),
-                interactions.Choice(name="C. Rustici", value="RUSTICI"),
-                interactions.Choice(name="P. Roose", value="ROOSE"),
-                interactions.Choice(name="S. Voisin (Laplace) ", value="VOISIN"),
-                interactions.Choice(name="N. Valles-Parlangeau", value="Valles-Parlangeau"),
-                interactions.Choice(name="P. Dagorret", value="DAGORRET"),
-                interactions.Choice(name="MA. Boudia", value="BOUDIA"),
-                interactions.Choice(name="M. Walton", value="WALTON"),
-                interactions.Choice(name="JM. Fiton", value="FITON"),
-                interactions.Choice(name="Y. Dourisbourne", value="DOURISBOURE"),
-                #interactions.Choice(name="M. Deguilhem", value="DEGUILHEM"),
-                interactions.Choice(name="MA. Gastambide", value="GASTAMBIDE"),
+    )
+    @interactions.slash_option(
+    name="prof",
+    description="De quel professeur veux-tu les informations ?",
+    required=True,
+    opt_type=interactions.OptionType.STRING,
+    choices=[
+        #         #On est limité à 25 choix, donc on en met que 25 (On met que les plus importants)
+                interactions.SlashCommandChoice(name="P. Lopistéguy", value="LOPISTÉGUY"),
+                interactions.SlashCommandChoice(name="Y. Carpentier", value="CARPENTIER"),
+                interactions.SlashCommandChoice(name="P. Etcheverry", value="ETCHEVERRY"),
+                interactions.SlashCommandChoice(name="C. Marquesuzaà", value="MARQUESUZAÀ"),
+                interactions.SlashCommandChoice(name="M. Bruyère", value="BRUYÈRE"),
+                interactions.SlashCommandChoice(name="A. Moulin", value="MOULIN"),
+                interactions.SlashCommandChoice(name="M. Borthwick", value="BORTHWICK"),
+                interactions.SlashCommandChoice(name="M. Erritali", value="ERRITALI"),
+                interactions.SlashCommandChoice(name="S. Sassi", value="SASSI"),
+                interactions.SlashCommandChoice(name="R. Chbeir", value="CHBEIR"),
+                interactions.SlashCommandChoice(name="T. Nodenot", value="NODENOT"),
+                interactions.SlashCommandChoice(name="E. Chicha", value="CHICHA"),
+                interactions.SlashCommandChoice(name="A. Boggia", value="BOGGIA"),
+                interactions.SlashCommandChoice(name="M. Capliez", value="CAPLIEZ"),
+                interactions.SlashCommandChoice(name="O. DEZEQUE", value="DEZEQUE"),
+                interactions.SlashCommandChoice(name="C. Rustici", value="RUSTICI"),
+                interactions.SlashCommandChoice(name="P. Roose", value="ROOSE"),
+                interactions.SlashCommandChoice(name="S. Voisin (Laplace) ", value="VOISIN"),
+                interactions.SlashCommandChoice(name="N. Valles-Parlangeau", value="Valles-Parlangeau"),
+                interactions.SlashCommandChoice(name="P. Dagorret", value="DAGORRET"),
+                interactions.SlashCommandChoice(name="MA. Boudia", value="BOUDIA"),
+                interactions.SlashCommandChoice(name="M. Walton", value="WALTON"),
+                interactions.SlashCommandChoice(name="JM. Fiton", value="FITON"),
+                interactions.SlashCommandChoice(name="Y. Dourisbourne", value="DOURISBOURE"),
+                interactions.SlashCommandChoice(name="MA. Gastambide", value="GASTAMBIDE"),
 
             ]
-        ),
-    ],
+
     )
-    async def info_prof(self, ctx: interactions.CommandContext, prof: str):
+    async def info_prof(self, ctx: interactions.SlashContext, prof: str):
             if not await self.check_state(ctx):
                 return
             info= self.edt.get_prof(prof)
@@ -247,15 +254,15 @@ class Salles(interactions.Extension):
             await ctx.send(embeds=Embed)
 
 
-    @interactions.extension_command(
+    @interactions.slash_command(
         name="emploi_du_temps",
-        aliases=["edt"],
         description="Retourne ton emploi du temps par rapport à tes rôles",
     )
-    async def emploi_du_temps(self, ctx: interactions.CommandContext):
+    async def emploi_du_temps(self, ctx: interactions.SlashContext):
         if not await self.check_state(ctx):
             return
         annee,td,tp="","",""
+
 
         for role in ctx.author.roles:
             if str(role) in ROLES["Année"]:
@@ -270,6 +277,7 @@ class Salles(interactions.Extension):
                 description="",
                 color=0xff8c3f,
                 footer={"text":"Dernière mise à jour: "+format_time(info["checked"])+"\nLes informations peuvent être incomplètes ou inexactes"},
+
         )
         if annee=="" or td=="" or tp=="":
             Embed.title=":x: ERREUR :x:"
@@ -277,9 +285,9 @@ class Salles(interactions.Extension):
             Embed.color=0xff0000
             await ctx.send(embeds=Embed, ephemeral=True)
             return
-            #await ctx.send("Tu n'as pas de rôle d'année, de TD ou de TP\nVérifie tes rôles ici : <#959813680101478470>")
         else:
             for i in range(0,len(info["cours"])):
+                print(format_time(info["cours"][i]["begin"])+" - "+format_time(info["cours"][i]["end"]),info["cours"][i]["name"]+" en salle "+info["cours"][i]["salle"]+" avec[none]")
                 Embed.add_field(name=format_time(info["cours"][i]["begin"])+" - "+format_time(info["cours"][i]["end"]), value=info["cours"][i]["name"]+" en salle "+info["cours"][i]["salle"]+" avec[none]", inline=False)
             await ctx.send(embeds=Embed)
 
