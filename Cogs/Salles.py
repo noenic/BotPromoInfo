@@ -113,6 +113,7 @@ class Salles(interactions.Extension):
             color=0xff8c3f,
             footer={"text":"Dernière mise à jour: "+format_time(self.edt.date.timestamp())+"\nLes informations peuvent être incomplètes ou inexactes"},
         )
+
         for salle in info:
             if salle in self.edt.listeSallesPC:
                 strsalle="🖥️ "+salle
@@ -120,7 +121,13 @@ class Salles(interactions.Extension):
                     strsalle+=" "
             else:
                 strsalle="📚 "+salle
+            print(strsalle + "     ->     " +format_time(info[salle][0][0])+" - "+format_time(info[salle][0][1]))
             Embed.add_field(name=strsalle + "     ->     " +format_time(info[salle][0][0])+" - "+format_time(info[salle][0][1]), value="\n", inline=False)
+        if len(info)==0:
+            Embed.title=":x: ERREUR :x:"
+            Embed.description="Soit il n'y a pas de salles libres, soit l'emploi du temps n'est pas encore chargé"
+            Embed.color=0xff0000
+
         await ctx.send(embeds=Embed)
 
 
@@ -151,13 +158,20 @@ class Salles(interactions.Extension):
             color=0xff8c3f,
             footer={"text":"Dernière mise à jour: "+format_time(info["checked"])+"\nLes informations peuvent être incomplètes ou inexactes"},
             )
-        
+        print(info)
         if "error" in info and info["error"]=="NOT FOUND":
             Embed.title=":x: ERREUR :x:"
             Embed.description="la salle "+str(salle)+" n'existe pas"
             Embed.color=0xff0000
             await ctx.send(embeds=Embed, ephemeral=True)
             return
+        if info["free"]==[] and info["cours"]==[] and not info["now"]:
+            Embed.title=":x: ERREUR :x:"
+            Embed.description="Problème lors de la récupération des informations"
+            Embed.color=0xff0000
+            await ctx.send(embeds=Embed, ephemeral=True)
+            return
+        
         else:
             if "now" in info and info["now"]:
                 Embed.set_thumbnail(url='https://media.tenor.com/LhSUbS1MsTgAAAAC/smile-no.gif')

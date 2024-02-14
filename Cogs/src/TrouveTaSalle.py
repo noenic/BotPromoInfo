@@ -5,6 +5,10 @@ import datetime
 import concurrent 
 import concurrent.futures
 
+import pytz
+timezone = pytz.timezone("Europe/Paris")
+
+
 
 
 class TrouveTaSalle():
@@ -39,7 +43,8 @@ class TrouveTaSalle():
     On le fait en parallèle pour gagner du temps (On fait les requetes en thread)
     '''
     def refresh(self):
-        self.date=datetime.datetime.now()
+  
+        self.date = datetime.datetime.now(timezone)
         # self.date=self.date+datetime.timedelta(days=1)
         # self.date=self.date.replace(hour=14,minute=0,second=0,microsecond=0)
         #Si il est avant 7h et apres 18h30, ou qu'on est le week end, on renvoie pas de donnees
@@ -52,7 +57,7 @@ class TrouveTaSalle():
         for salle in self.salles:
             tempsalle[salle]=[]
         # #On met la date de demain à 8h
-        print("[Salles] Refresh des emplois du temps...",self.date.strftime("%d/%m/%Y %H:%M:%S"))
+        print("[Salles] Refresh des emplois du temps...UTC: ", self.date.strftime("%d/%m/%Y %H:%M:%S"))
         self.lock=True
         with concurrent.futures.ThreadPoolExecutor() as executor:
             #On fait les requetes en parallèle (Parce que c'est long)
@@ -141,7 +146,7 @@ class TrouveTaSalle():
 
     #Si la derniere date de refresh est superieur a 5 minutes on refresh pour avoir les nouvelles données si il y en a
     def need_refresh(self):
-        if datetime.datetime.now()-self.date > datetime.timedelta(minutes=10) and self.refresh_on_init:
+        if datetime.datetime.now(timezone)-self.date > datetime.timedelta(minutes=10) and self.refresh_on_init:
             print("[Salles] On refresh")
             self.refresh()
 
