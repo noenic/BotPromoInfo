@@ -11,10 +11,10 @@ timezone = pytz.timezone("Europe/Paris")
 if os.getenv('SEMESTER') == None:
     print("La variable d'environnement SEMESTRE n'est pas définie")
     exit(1)
-SEMESTRE=os.getenv('SEMESTRE')
+SEMESTRE=os.getenv('SEMESTER')
 
 # Si la variable d'environnement SEMESTRE est égale à 1, on utilise les ID des promos pour le semestre 1
-if (os.getenv('SEMESTER').isdigit() and int(os.getenv('SEMESTER')) % 2 != 0):
+if (SEMESTRE.isdigit() and int(SEMESTRE) % 2 != 0):
     ID_PROMOS={
         # ID des promos pour le semestre 1 sur le site des emplois du temps
        "1-TD1-TP1": "355",
@@ -33,7 +33,7 @@ if (os.getenv('SEMESTER').isdigit() and int(os.getenv('SEMESTER')) % 2 != 0):
        "3-TD2-TP2" :"195"
     }
 # Sinon, on utilise les ID des promos pour le semestre 2
-elif (os.getenv('SEMESTER').isdigit() and int(os.getenv('SEMESTER')) % 2 == 0):
+elif (SEMESTRE.isdigit() and int(SEMESTRE) % 2 == 0):
     # Semestre 2
     # ID des promos pour le semestre 2 sur le site des emplois du temps
     ID_PROMOS={
@@ -67,10 +67,6 @@ elif (os.getenv('SEMESTER').isdigit() and int(os.getenv('SEMESTER')) % 2 == 0):
 
     }
     
-else:
-    print("La variable d'environnement SEMESTRE n'est pas définie ou n'est pas un nombre impair ou pair")
-    exit(1)
-
 
 
 
@@ -141,7 +137,7 @@ class Salles(interactions.Extension):
     description="Retourne les salles libres actuellement, triées par durée de disponibilité",
     )
     async def salle_libre(self, ctx: interactions.SlashContext):
-        print("L'utilisateur ",ctx.author," a demandé les salles libres")
+        print("[Salles] L'utilisateur ",ctx.author," a demandé les salles libres")
         if not await self.check_state(ctx):
             return
         info=self.edt.get_salle_libre()
@@ -186,7 +182,7 @@ class Salles(interactions.Extension):
         min_length=1
     )
     async def info_salle(self, ctx: interactions.SlashContext, salle: str):
-        print("L'utilisateur ",ctx.author," a demandé les informations sur la salle ",salle)
+        print("[Salles] L'utilisateur ",ctx.author," a demandé les informations sur la salle ",salle)
         if not await self.check_state(ctx):
             return
         info=self.edt.get_info_salle(salle)
@@ -277,7 +273,7 @@ class Salles(interactions.Extension):
 
     )
     async def info_prof(self, ctx: interactions.SlashContext, prof: str):
-            print("L'utilisateur ",ctx.author," a demandé les informations sur le professeur ",prof)
+            print("[Salles] L'utilisateur ",ctx.author," a demandé les informations sur le professeur ",prof)
             if not await self.check_state(ctx):
                 return
             info= self.edt.get_prof(prof)
@@ -314,7 +310,7 @@ class Salles(interactions.Extension):
         description="Retourne ton emploi du temps par rapport à tes rôles",
     )
     async def emploi_du_temps(self, ctx: interactions.SlashContext):
-        print("L'utilisateur ",ctx.author," a demandé son emploi du temps")
+        print("[Salles] L'utilisateur ",ctx.author," a demandé son emploi du temps")
         if not await self.check_state(ctx):
             return
         annee,td,tp="","",""
@@ -349,19 +345,26 @@ class Salles(interactions.Extension):
 
         
     @interactions.slash_command(
-        name="bot_info",
-        description="Retourne des informations sur le bot",
+        name="extension_salle_info",
+        description="Retourne des informations le plugin salle",
     )
-    async def bot_info(self, ctx: interactions.SlashContext):
+    async def extension_salle_info(self, ctx: interactions.SlashContext):
+        print("[Salles] L'utilisateur ",ctx.author," a demandé des informations sur l'extension Salles")
         Embed=interactions.Embed(
-            title="Informations sur le bot",
+            title="Informations sur l'extension Salles",
             description="",
             color=0xff8c3f,
-            footer={"text":"Bot créé par <@!356383729125556228> \nhttps://github.com/noenic/BotPromoInfo"},
+            footer={"text":"Extension créé par @noenic \nhttps://github.com/noenic/BotPromoInfo"},
         )
         Embed.add_field(name="Semestre", value=SEMESTRE, inline=False)
         Embed.add_field(name="Dernière mise à jour de l'emploi du temps", value=format_time(self.edt.date.timestamp(),timezone), inline=False)
-        await ctx.send(embeds=Embed)
+        Embed.add_field(name="Liste des salles PC 🖥️", value=str(self.edt.listeSallesPC), inline=True)
+        Embed.add_field(name="Liste des salles 📚", value=str(self.edt.listeSalles), inline=True)
+        Embed.add_field(name="Liste des ID des promos", value=str(ID_PROMOS), inline=False)
+        Embed.add_field(name="Liste des rôles", value=str(ROLES), inline=False)
+
+
+        await ctx.send(embeds=Embed, ephemeral=True)
 
 
 
