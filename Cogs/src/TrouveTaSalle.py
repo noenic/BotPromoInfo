@@ -200,7 +200,7 @@ class TrouveTaSalle():
         prof_info["cours"].sort(key=lambda x: x["begin"])
 
         #On regarde si le premier cours est en cours
-        print("UTC TIME IS ",self.date.timestamp())
+        # print("UTC TIME IS ",self.date.timestamp())
         if len(prof_info["cours"])>0 and prof_info["cours"][0]["begin"] <= self.date.timestamp() and prof_info["cours"][0]["end"] >= self.date.timestamp():
             prof_info["now"]=prof_info["cours"][0]
             prof_info["cours"].remove(prof_info["now"]) #On enleve le cours de la liste des cours 

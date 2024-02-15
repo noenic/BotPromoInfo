@@ -196,7 +196,6 @@ class Salles(interactions.Extension):
             color=0xff8c3f,
             footer={"text":"Dernière mise à jour: "+format_time(info["checked"],timezone)+"\nLes informations peuvent être incomplètes ou inexactes"},
             )
-        print(info)
         if "error" in info and info["error"]=="NOT FOUND":
             Embed.title=":x: ERREUR :x:"
             Embed.description="la salle "+str(salle)+" n'existe pas"
@@ -288,7 +287,6 @@ class Salles(interactions.Extension):
                 color=0xff8c3f,
                 footer={"text":"Dernière mise à jour: "+format_time(info["checked"],timezone)+"\nLes informations peuvent être incomplètes ou inexactes"},
             )
-            print(info)
             if info['now']!=None:
                 #Embed.set_thumbnail(url="https://media.tenor.com/0YJ3qQ2Qb9UAAAAC/working.gif")
                 Embed.add_field(name="🔴 En cours", value=info["now"]["name"]+" de **"+format_time(info["now"]["begin"],timezone)+"** à  **"+format_time(info["now"]["end"],timezone)+"** en salle **"+info["now"]["salle"]+"**", inline=False)
