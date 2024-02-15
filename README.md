@@ -5,7 +5,10 @@ Ce bot originalement prévu pour recuperer les menus du RU d'Anglet, a été mod
 Etant donné que le RU à decidé de ne pas mettre les menus sur son site web, le bot ne fait pour le moment que recuperer les emplois du temps de chaque promo.
 
 ## Utilisation
-Pour utiliser le bot, il suffit de mettre en variable d'environnement le token du bot, et de lancer le fichier `Hegobot.py`.
+Pour utiliser le bot, il suffit de :
+-  mettre en variable d'environnement le token du bot,
+-  mettre en variable d'environnement le semestre actuel (1 pour impair et 2 pour pair),
+ et de lancer le fichier `Hegobot.py`.
 
 
 ## Fonctionnalités

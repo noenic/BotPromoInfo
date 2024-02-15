@@ -44,7 +44,7 @@ class TrouveTaSalle():
     '''
     def refresh(self):
   
-        self.date = datetime.datetime.now(timezone)
+        self.date = datetime.datetime.now()
         # self.date=self.date+datetime.timedelta(days=1)
         # self.date=self.date.replace(hour=14,minute=0,second=0,microsecond=0)
         #Si il est avant 7h et apres 18h30, ou qu'on est le week end, on renvoie pas de donnees
@@ -57,7 +57,7 @@ class TrouveTaSalle():
         for salle in self.salles:
             tempsalle[salle]=[]
         # #On met la date de demain à 8h
-        print("[Salles] Refresh des emplois du temps...UTC: ", self.date.strftime("%d/%m/%Y %H:%M:%S"))
+        print("[Salles] Refresh des emplois du temps...: ", self.date.astimezone(timezone).strftime("%d/%m/%Y %H:%M:%S"))
         self.lock=True
         with concurrent.futures.ThreadPoolExecutor() as executor:
             #On fait les requetes en parallèle (Parce que c'est long)
@@ -76,6 +76,7 @@ class TrouveTaSalle():
         #On trie les events de chaque salle par date de debut et on les evenement qui commencent et se terminent au meme moment (doublons)
         for salle in tempsalle:
             tempsalle[salle].sort(key=lambda x: x.begin.timestamp())
+        
             i = 0
             #On supprime les doublons
             while i < len(tempsalle[salle])-1:
@@ -102,8 +103,8 @@ class TrouveTaSalle():
         salles_TD = {}
         for event in events:
             #Je ne sais pas pourquoi mais les evenements sont en UTC donc on ajoute une heure
-            event.end = event.end + datetime.timedelta(hours=1)
-            event.begin = event.begin + datetime.timedelta(hours=1)
+            # event.end = event.end + datetime.timedelta(hours=1)
+            # event.begin = event.begin + datetime.timedelta(hours=1)
 
             #On ne garde que les évènements du jour et si l'evenement est le jour d'après, on quitte (On fait gaffe au changement de mois et d'année)
             if event.begin.date().day > self.date.day or event.begin.date().month > self.date.month or event.begin.date().year > self.date.year:
@@ -146,7 +147,7 @@ class TrouveTaSalle():
 
     #Si la derniere date de refresh est superieur a 5 minutes on refresh pour avoir les nouvelles données si il y en a
     def need_refresh(self):
-        if datetime.datetime.now(timezone)-self.date > datetime.timedelta(minutes=10) and self.refresh_on_init:
+        if datetime.datetime.now()-self.date > datetime.timedelta(minutes=10) and self.refresh_on_init:
             print("[Salles] On refresh")
             self.refresh()
 
@@ -199,18 +200,22 @@ class TrouveTaSalle():
         prof_info["cours"].sort(key=lambda x: x["begin"])
 
         #On regarde si le premier cours est en cours
+        print("UTC TIME IS ",self.date.timestamp())
         if len(prof_info["cours"])>0 and prof_info["cours"][0]["begin"] <= self.date.timestamp() and prof_info["cours"][0]["end"] >= self.date.timestamp():
             prof_info["now"]=prof_info["cours"][0]
             prof_info["cours"].remove(prof_info["now"]) #On enleve le cours de la liste des cours 
-        #On trie les cours par heure de debut
         return prof_info
 
     #Retourne les creneaux libres d'une salle
     def detecter_creneaux_libres_salle(self,salle:str):
         creneaux_libres = []
-        #Disons qu'une salle est ouverte de 8h a 20h
-        debut = datetime.datetime(self.date.year, self.date.month, self.date.day, 7, 45, 0)
-        fin = datetime.datetime(self.date.year, self.date.month, self.date.day, 19, 30, 0)
+        #Disons qu'une salle est ouverte de 8h a 18h30
+        #On crée une date de debut qui est la date actuelle à 7h45
+        debut = self.date.replace(hour=7,minute=45,second=0,microsecond=0)
+        #On crée une date de fin qui est la date actuelle à 19h30
+        fin = self.date.replace(hour=18,minute=30,second=0,microsecond=0)
+
+        
         #On verifie qu'on est pas plus tard que la fin
         if self.salles[salle] == [] and self.date.timestamp() < fin.timestamp():
             creneaux_libres.append([self.date.timestamp(), fin.timestamp()])

@@ -5,40 +5,77 @@ import traceback
 import datetime as datetime
 import pytz
 from src.TrouveTaSalle import TrouveTaSalle
+import os
+timezone = pytz.timezone("Europe/Paris")
 #------------CONSTANTES------------#
-ID_PROMOS={
-    "1-TD1-TP1": "368",
-    "1-TD1-TP2": "369",
-    "1-TD2-TP3": "371",
-    "1-TD2-TP4": "372",
-    "1-TD3-TP5": "373",
-    "2-TD1-TP1": "394",
-    "2-TD1-TP2": "395",
-    "2-TD2-TP3": "397",
-    "2-TD2-TP4": "398"
-}
+if os.getenv('SEMESTER') == None:
+    print("La variable d'environnement SEMESTRE n'est pas définie")
+    exit(1)
+SEMESTRE=os.getenv('SEMESTRE')
 
-#ID des rôles pour chaque TD,TP et Année
-ROLES={"TD":{"959814970336510022":"TD1",
-            "959815001642790942":"TD2",
-            "959815034530324590":"TD3",},
-       "TP":{"959815069665996800":"TP1",
-             "959815092390752256":"TP2",
-             "959815110157828147":"TP3",
-             "959815124938534962":"TP4",
-             "959815142038700052":"TP5",},
-       "Année":{"959809924798496799":"1",
-                "959809978875650108":"2",},
+# Si la variable d'environnement SEMESTRE est égale à 1, on utilise les ID des promos pour le semestre 1
+if (os.getenv('SEMESTER').isdigit() and int(os.getenv('SEMESTER')) % 2 != 0):
+    ID_PROMOS={
+        # ID des promos pour le semestre 1 sur le site des emplois du temps
+       "1-TD1-TP1": "355",
+       "1-TD1-TP2": "356",
+       "1-TD2-TP3": "358",
+       "1-TD2-TP4": "359",
+       "1-TD3-TP5": "360",#
+       "2-TD1-TP1": "381",
+       "2-TD1-TP2": "382",
+       "2-TD2-TP3": "384",
+       "2-TD2-TP4": "385",
+    # TD1 = A, TD2 = D , TP1 = init, TP2 = alt
+       "3-TD1-TP1" :"240",
+       "3-TD1-TP2" :"232",
+       "3-TD2-TP1" :"300",
+       "3-TD2-TP2" :"195"
+    }
+# Sinon, on utilise les ID des promos pour le semestre 2
+elif (os.getenv('SEMESTER').isdigit() and int(os.getenv('SEMESTER')) % 2 == 0):
+    # Semestre 2
+    # ID des promos pour le semestre 2 sur le site des emplois du temps
+    ID_PROMOS={
+        "1-TD1-TP1": "368",
+        "1-TD1-TP2": "369",
+        "1-TD2-TP3": "371",
+        "1-TD2-TP4": "372",
+        "1-TD3-TP5": "373",
+        "2-TD1-TP1": "394",
+        "2-TD1-TP2": "395",
+        "2-TD2-TP3": "397",
+        "2-TD2-TP4": "398",
+        "3-TD1-TP1" :"408",
+        "3-TD1-TP2" :"321",
+        "3-TD2-TP1" :"439",
+        "3-TD2-TP2" :"429"
+    }
+
+    #ID des rôles pour chaque TD,TP et Année sur le serveur discord
+    ROLES={"TD":{"959814970336510022":"TD1",
+                "959815001642790942":"TD2",
+                "959815034530324590":"TD3",},
+        "TP":{"959815069665996800":"TP1",
+                "959815092390752256":"TP2",
+                "959815110157828147":"TP3",
+                "959815124938534962":"TP4",
+                "959815142038700052":"TP5",},
+        "Année":{"959809924798496799":"1",
+                    "959809978875650108":"2",
+                    "959810006537093210":"3"},
+
+    }
     
-}
+else:
+    print("La variable d'environnement SEMESTRE n'est pas définie ou n'est pas un nombre impair ou pair")
+    exit(1)
 
 
 
 
+def format_time(timestamp,tz=pytz.timezone("UTC")):
 
-def format_time(timestamp):
-    # Timezone Paris
-    tz = pytz.timezone('Europe/Paris')
     # On convertit le timestamp UTC en timestamp Paris
     timestamp = datetime.datetime.utcfromtimestamp(timestamp).replace(tzinfo=pytz.utc).astimezone(tz)
     return timestamp.strftime("%H:%M")
@@ -104,6 +141,7 @@ class Salles(interactions.Extension):
     description="Retourne les salles libres actuellement, triées par durée de disponibilité",
     )
     async def salle_libre(self, ctx: interactions.SlashContext):
+        print("L'utilisateur ",ctx.author," a demandé les salles libres")
         if not await self.check_state(ctx):
             return
         info=self.edt.get_salle_libre()
@@ -111,7 +149,7 @@ class Salles(interactions.Extension):
             title="Salles libres actuellement, triées par durée de disponibilité",
             description="",
             color=0xff8c3f,
-            footer={"text":"Dernière mise à jour: "+format_time(self.edt.date.timestamp())+"\nLes informations peuvent être incomplètes ou inexactes"},
+            footer={"text":"Dernière mise à jour: "+format_time(self.edt.date.timestamp(),timezone)+"\nLes informations peuvent être incomplètes ou inexactes"},
         )
 
         for salle in info:
@@ -121,8 +159,7 @@ class Salles(interactions.Extension):
                     strsalle+=" "
             else:
                 strsalle="📚 "+salle
-            print(strsalle + "     ->     " +format_time(info[salle][0][0])+" - "+format_time(info[salle][0][1]))
-            Embed.add_field(name=strsalle + "     ->     " +format_time(info[salle][0][0])+" - "+format_time(info[salle][0][1]), value="\n", inline=False)
+            Embed.add_field(name=strsalle + "     ->     " +format_time(info[salle][0][0],timezone)+" - "+format_time(info[salle][0][1],timezone), value="\n", inline=False)
         if len(info)==0:
             Embed.title=":x: ERREUR :x:"
             Embed.description="Soit il n'y a pas de salles libres, soit l'emploi du temps n'est pas encore chargé"
@@ -149,6 +186,7 @@ class Salles(interactions.Extension):
         min_length=1
     )
     async def info_salle(self, ctx: interactions.SlashContext, salle: str):
+        print("L'utilisateur ",ctx.author," a demandé les informations sur la salle ",salle)
         if not await self.check_state(ctx):
             return
         info=self.edt.get_info_salle(salle)
@@ -156,7 +194,7 @@ class Salles(interactions.Extension):
             title="Informations sur la salle "+str(salle),
             description="",
             color=0xff8c3f,
-            footer={"text":"Dernière mise à jour: "+format_time(info["checked"])+"\nLes informations peuvent être incomplètes ou inexactes"},
+            footer={"text":"Dernière mise à jour: "+format_time(info["checked"],timezone)+"\nLes informations peuvent être incomplètes ou inexactes"},
             )
         print(info)
         if "error" in info and info["error"]=="NOT FOUND":
@@ -175,24 +213,24 @@ class Salles(interactions.Extension):
         else:
             if "now" in info and info["now"]:
                 Embed.set_thumbnail(url='https://media.tenor.com/LhSUbS1MsTgAAAAC/smile-no.gif')
-                Embed.add_field(name="🔴 En cours", value=info["now"]["name"]+" de **"+format_time(info["now"]["begin"])+"** à  **"+format_time(info["now"]["end"])+"**", inline=False)
+                Embed.add_field(name="🔴 En cours", value=info["now"]["name"]+" de **"+format_time(info["now"]["begin"],timezone)+"** à  **"+format_time(info["now"]["end"],timezone)+"**", inline=False)
             else:
                 Embed.set_thumbnail(url="https://media.tenor.com/QEk9IT7TRWcAAAAd/snacks-close.gif")
-                Embed.add_field(name="🟢 Libre", value="", inline=False)
+                Embed.add_field(name="🟢 Libre", value="\n", inline=False)
             
             if "error" not in info:
                 if len(info["cours"])>0:
                     prochain=""
                     #On prend pas le premier cours, car c'est le cours actuel
                     for i in range(0,len(info["cours"])):
-                        prochain+=info["cours"][i]["name"]+" de **"+format_time(info["cours"][i]["begin"])+"** à  **"+format_time(info["cours"][i]["end"])+"**\n"
+                        prochain+=info["cours"][i]["name"]+" de **"+format_time(info["cours"][i]["begin"],timezone)+"** à  **"+format_time(info["cours"][i]["end"],timezone)+"**\n"
                     Embed.add_field(name=":alarm_clock: Prochain cours", value=prochain, inline=False)
                 
 
                 if info["free"]:
                     free=""
                     for i in range(0,len(info["free"])):
-                        free+="**"+format_time(info["free"][i][0])+"** à **"+format_time(info["free"][i][1])+"**\n"
+                        free+="**"+format_time(info["free"][i][0],timezone)+"** à **"+format_time(info["free"][i][1],timezone)+"**\n"
                     Embed.add_field(name=":white_check_mark: Disponibilités", value=free, inline=False)
                 
 
@@ -240,6 +278,7 @@ class Salles(interactions.Extension):
 
     )
     async def info_prof(self, ctx: interactions.SlashContext, prof: str):
+            print("L'utilisateur ",ctx.author," a demandé les informations sur le professeur ",prof)
             if not await self.check_state(ctx):
                 return
             info= self.edt.get_prof(prof)
@@ -247,24 +286,28 @@ class Salles(interactions.Extension):
                 title="Informations sur "+str(prof),
                 description="",
                 color=0xff8c3f,
-                footer={"text":"Dernière mise à jour: "+format_time(info["checked"])+"\nLes informations peuvent être incomplètes ou inexactes"},
+                footer={"text":"Dernière mise à jour: "+format_time(info["checked"],timezone)+"\nLes informations peuvent être incomplètes ou inexactes"},
             )
+            print(info)
             if info['now']!=None:
                 #Embed.set_thumbnail(url="https://media.tenor.com/0YJ3qQ2Qb9UAAAAC/working.gif")
-                Embed.add_field(name="🔴 En cours", value=info["now"]["name"]+" de **"+format_time(info["now"]["begin"])+"** à  **"+format_time(info["now"]["end"])+"** en salle **"+info["now"]["salle"]+"**", inline=False)
+                Embed.add_field(name="🔴 En cours", value=info["now"]["name"]+" de **"+format_time(info["now"]["begin"],timezone)+"** à  **"+format_time(info["now"]["end"],timezone)+"** en salle **"+info["now"]["salle"]+"**", inline=False)
             else:
                 #Embed.set_thumbnail(url="https://media.tenor.com/LhSUbS1MsTgAAAAC/smile-no.gif")
                 if prof=="CHBEIR":
                     Embed.add_field(name="🟡 Pas en cours", value="Actuellement en train d'apprendre le PL/SQL à une table basse", inline=False)
                 else:
-                    Embed.add_field(name="🟡 Pas en cours", value="", inline=False)
+                    Embed.add_field(name="🟡 Pas en cours", value="\n", inline=False)
 
             if info['cours']!=[]:
                 prochain=""
                 #On prend pas le premier cours, car c'est le cours actuel
                 for i in range(0,len(info["cours"])):
-                    prochain+=info["cours"][i]["name"]+" de **"+format_time(info["cours"][i]["begin"])+"** à  **"+format_time(info["cours"][i]["end"])+"** en salle **"+info["cours"][i]["salle"]+"**\n"
-                Embed.add_field(name=":alarm_clock: Prochain cours", value=prochain, inline=False)
+                    prochain+=info["cours"][i]["name"]+" de **"+format_time(info["cours"][i]["begin"],timezone)+"** à  **"+format_time(info["cours"][i]["end"],timezone)+"** en salle **"+info["cours"][i]["salle"]+"**\n"
+                if prochain!="":
+                    Embed.add_field(name=":alarm_clock: Prochain cours", value=prochain, inline=False)
+            else:
+                Embed.add_field(name=":alarm_clock: Prochain cours", value="Pas de cours prévus", inline=False)
             await ctx.send(embeds=Embed)
 
 
@@ -273,6 +316,7 @@ class Salles(interactions.Extension):
         description="Retourne ton emploi du temps par rapport à tes rôles",
     )
     async def emploi_du_temps(self, ctx: interactions.SlashContext):
+        print("L'utilisateur ",ctx.author," a demandé son emploi du temps")
         if not await self.check_state(ctx):
             return
         annee,td,tp="","",""
@@ -290,24 +334,37 @@ class Salles(interactions.Extension):
                 title="Informations sur l'emploi du temps du TD :\n"+td+"-"+tp+" du BUT"+annee+"",
                 description="",
                 color=0xff8c3f,
-                footer={"text":"Dernière mise à jour: "+format_time(info["checked"])+"\nLes informations peuvent être incomplètes ou inexactes"},
+                footer={"text":"Dernière mise à jour: "+format_time(info["checked"],timezone)+"\nLes informations peuvent être incomplètes ou inexactes"},
 
         )
         if annee=="" or td=="" or tp=="":
             Embed.title=":x: ERREUR :x:"
-            Embed.add_field(name="Tu n'as pas de rôle d'année, de TD ou de TP\nVérifie tes rôles ici : <#959813680101478470>", value="", inline=False)
+            Embed.add_field(name="Tu n'as pas de rôle d'année, de TD ou de TP\nVérifie tes rôles ici : <#959813680101478470>", value="\n", inline=False)
             Embed.color=0xff0000
             await ctx.send(embeds=Embed, ephemeral=True)
             return
         else:
             for i in range(0,len(info["cours"])):
-                print(format_time(info["cours"][i]["begin"])+" - "+format_time(info["cours"][i]["end"]),info["cours"][i]["name"]+" en salle "+info["cours"][i]["salle"]+" avec[none]")
-                Embed.add_field(name=format_time(info["cours"][i]["begin"])+" - "+format_time(info["cours"][i]["end"]), value=info["cours"][i]["name"]+" en salle "+info["cours"][i]["salle"]+" avec[none]", inline=False)
+                Embed.add_field(name=format_time(info["cours"][i]["begin"],timezone)+" - "+format_time(info["cours"][i]["end"],timezone), value=info["cours"][i]["name"]+" en salle "+info["cours"][i]["salle"]+" avec[none]", inline=False)
             await ctx.send(embeds=Embed)
 
 
         
-        
+    @interactions.slash_command(
+        name="bot_info",
+        description="Retourne des informations sur le bot",
+    )
+    async def bot_info(self, ctx: interactions.SlashContext):
+        Embed=interactions.Embed(
+            title="Informations sur le bot",
+            description="",
+            color=0xff8c3f,
+            footer={"text":"Bot créé par <@!356383729125556228> \nhttps://github.com/noenic/BotPromoInfo"},
+        )
+        Embed.add_field(name="Semestre", value=SEMESTRE, inline=False)
+        Embed.add_field(name="Dernière mise à jour de l'emploi du temps", value=format_time(self.edt.date.timestamp(),timezone), inline=False)
+        await ctx.send(embeds=Embed)
+
 
 
 

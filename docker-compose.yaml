@@ -7,3 +7,4 @@ services:
       dockerfile: Dockerfile
     environment:
       - TOKEN=<your_token_here>
+      - SEMESTER=<your_semester_here (odd or even)>

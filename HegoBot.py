@@ -22,7 +22,6 @@ sys.path.append('Cogs/src')
 client.load_extension("Cogs.Salles")
 
 
-
 @interactions.listen()
 async def on_ready():
     #Fonction qui s'execute quand le bot est prêt
