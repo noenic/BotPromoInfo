@@ -346,22 +346,28 @@ class Salles(interactions.Extension):
         
     @interactions.slash_command(
         name="extension_salle_info",
-        description="Retourne des informations le plugin salle",
+        description="Retourne des informations sur le plugin salle",
     )
     async def extension_salle_info(self, ctx: interactions.SlashContext):
         print("[Salles] L'utilisateur ",ctx.author," a demandé des informations sur l'extension Salles")
         Embed=interactions.Embed(
-            title="Informations sur l'extension Salles",
+            title="Informations sur l'extension [Salles]",
             description="",
             color=0xff8c3f,
             footer={"text":"Extension créé par @noenic \nhttps://github.com/noenic/BotPromoInfo"},
         )
-        Embed.add_field(name="Semestre", value=SEMESTRE, inline=False)
+        Embed.add_field(name="Semestre", value=f"{SEMESTRE} {'(pair)' if int(SEMESTRE) % 2 == 0 else '(impair)'}", inline=False)
         Embed.add_field(name="Dernière mise à jour de l'emploi du temps", value=format_time(self.edt.date.timestamp(),timezone), inline=False)
         Embed.add_field(name="Liste des salles PC 🖥️", value=str(self.edt.listeSallesPC), inline=True)
-        Embed.add_field(name="Liste des salles 📚", value=str(self.edt.listeSalles), inline=True)
-        Embed.add_field(name="Liste des ID des promos", value=str(ID_PROMOS), inline=False)
-        Embed.add_field(name="Liste des rôles", value=str(ROLES), inline=False)
+        Embed.add_field(name="Liste des salles 📚", value=str(self.edt.listeSallesTD), inline=True)
+        promo_list = "\n".join([f"{k}: {v}" for k, v in ID_PROMOS.items()])
+        Embed.add_field(name="Liste des ID des promos", value=promo_list, inline=False)
+        role_list = ""
+        for role_type, roles in ROLES.items():
+            role_list += f"{role_type}:\n"
+            for role_id, role_name in roles.items():
+                role_list += f"  - {role_id}: {role_name}\n"
+        Embed.add_field(name="Liste des rôles", value=role_list, inline=False)
 
 
         await ctx.send(embeds=Embed, ephemeral=True)
